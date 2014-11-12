@@ -235,6 +235,8 @@ class MediativeApi {
             $response = $this->curl->response;
             if(isset($response->auth->token->token)) {
                 $this->setToken($response->auth->token->token);
+            } else {
+                throw new Exception('Invalid developer login');
             }
         }
         return $this;

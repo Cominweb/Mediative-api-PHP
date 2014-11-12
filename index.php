@@ -1,8 +1,8 @@
 <?php
 /*   CONFIG TEST   */
-define('PUBLIC', '***your public developer key***');
-define('SECRET', '***your secret developer key***');
-define('DOMAIN', '***your working domain***');
+define('PUB', '***your public token goes here***');
+define('SECRET', '***your secret token goes here***');
+define('DOMAIN', '***your Mediative domain goes here***');
 /* END CONFIG PART */
 
 // let see in real time what happens
@@ -13,10 +13,10 @@ ob_end_flush();
 require('MediativeApi.php');
 
 //start a new instance of the API
-$client = new MediativeApi(PUBLIC, SECRET, DOMAIN);
+$client = new MediativeApi(PUB, SECRET, DOMAIN);
 
 // first, we do not have token, let's ask one
-$client->disableSecure()->auth();
+$client->auth();
 $token = $client->getToken();
 
 // let's prepare datas to add a media
@@ -45,6 +45,7 @@ try {
         var_dump($query->Media);
         echo '<h4>Deleting #'.$id.' </h4>';
         $query = $client->delete('medias', $id); // request to delete the added media
+        var_dump($query);
         echo '<h4>Confirmation...</h4>';
         $query = $client->get('medias', $id); // request to check media has been deleted
         var_dump($query);

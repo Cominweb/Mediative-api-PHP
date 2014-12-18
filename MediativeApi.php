@@ -248,11 +248,12 @@ class MediativeApi {
      * @param string $ressource The ressource requested (eg. medias)
      * @param mixed $options The request options in array (limits, offsets, conditions, etc...), or integer to view the ressource ID provided
      * @param bool $autoMap Parse $options to be used as int wihch give ID to view (default: true)
+     * @param bool $shortCut Do we return directly the requested ressource or the whole response datas (default: true)
      * @access public
      * @throws Exception if the request cannot be done, or if the response cannot be parsed
      * @return mixed Return the response content in an stdClass, or false
      */
-    public function get($ressource, $options = array(), $autoMap = true) {
+    public function get($ressource, $options = array(), $autoMap = true, $shortCut = true) {
         $this->reset();
         $token = $this->getToken();
         if(is_numeric($options) && $autoMap === true) {
@@ -273,7 +274,7 @@ class MediativeApi {
         } else {
             $response = $this->curl->response->response;
             $ressourceName = preg_replace('#^(\w{1,})(/\d{1,})?$#', '$1', $ressource);
-            if(isset($response->{$ressourceName})) {
+            if(isset($response->{$ressourceName}) && $shortCut === true) {
                 return $response->{$ressourceName};
             } else {
                 return $response;

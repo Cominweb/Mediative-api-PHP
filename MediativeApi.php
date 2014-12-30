@@ -30,7 +30,7 @@ class MediativeApi {
      * Define current version used
      * @const VERSION
      */
-    const VERSION = 1;
+    const VERSION = 1.1;
     /**
      * Define the file extension wanted for results
      * @const EXT
@@ -228,11 +228,11 @@ class MediativeApi {
         if(!$this->secure) {
             $this->curl->setOpt(CURLOPT_SSL_VERIFYPEER, false);
         }
-        $this->curl->get($this::API . '/api/login'.$this::EXT.'?'.http_build_query(array('domain' => $this->getDomain())));
+        $this->curl->get($this::API . 'api/login'.$this::EXT.'?'.http_build_query(array('domain' => $this->getDomain())));
         if ($this->curl->error) {
             throw new Exception($this->curl->error_message, $this->curl->error_code);
         } else {
-            $response = $this->curl->response;
+            $response = $this->curl->response; $curl = $this->curl;
             if(isset($response->auth->token->token)) {
                 $this->setToken($response->auth->token->token);
             } else {
@@ -288,11 +288,12 @@ class MediativeApi {
      * @param string $ressource The ressource requested (eg. medias)
      * @param array $datas The request datas to POST
      * @param array $options The request options in array added to the URL (limits, offsets, conditions, etc...)
+     * @param bool $shortCut Do we return directly the requested ressource or the whole response datas (default: true)
      * @access public
      * @throws Exception if the request cannot be done, or if the response cannot be parsed
      * @return object Return the response content in an stdClass
      */
-    public function post($ressource, $datas = array(), $options = array()) {
+    public function post($ressource, $datas = array(), $options = array(), $shortCut = true) {
         $this->reset();
         $token = $this->getToken();
         $options = array_merge_recursive($options, array('token' => $this->getToken(), 'd' => $this->getDomain()));
@@ -301,12 +302,13 @@ class MediativeApi {
             throw new Exception($this->curl->error_message, $this->curl->error_code);
             return $this->curl->response;
         } elseif(!isset($this->curl->response->response)) {
+            echo stripslashes($this->curl->response);
             throw new Exception('Cannot parse response datas');
             return $this->curl->response;
         } else {
             $response = $this->curl->response->response;
             $ressourceName = preg_replace('#^(\w{1,})(/\d{1,})?$#', '$1', $ressource);
-            if(isset($response->{$ressourceName})) {
+            if(isset($response->{$ressourceName}) && $shortCut === true) {
                 return $response->{$ressourceName};
             } else {
                 return $response;
@@ -322,11 +324,12 @@ class MediativeApi {
      * @param array $options The request options in array added to the URL (limits, offsets, conditions, etc...)
      * @param bool $check Check if an ID is provided to do the request (default: true)
      * @param bool $autoMap Update the ressource URL depending on the $datas param (default: true)
+     * @param bool $shortCut Do we return directly the requested ressource or the whole response datas (default: true)
      * @access public
      * @throws Exception if the request cannot be done, or if the response cannot be parsed
      * @return object Return the response content in an stdClass
      */
-    public function put($ressource, $datas= array(), $options = array(), $check = true, $autoMap = true) {
+    public function put($ressource, $datas= array(), $options = array(), $check = true, $autoMap = true, $shortCut = true) {
         $this->reset();
         $token = $this->getToken();
         if(!preg_match('#^\w{1,}/\d{1,}$#', $ressource) && !isset($datas['id']) && $check === true) {
@@ -346,7 +349,7 @@ class MediativeApi {
         } else {
             $response = $this->curl->response->response;
             $ressourceName = preg_replace('#^(\w{1,})(/\d{1,})?$#', '$1', $ressource);
-            if(isset($response->{$ressourceName})) {
+            if(isset($response->{$ressourceName}) && $shortCut === true) {
                 return $response->{$ressourceName};
             } else {
                 return $response;
@@ -360,11 +363,12 @@ class MediativeApi {
      * @param string $ressource The ressource requested (eg. medias)
      * @param mixed $options The request options in array added to the URL, or the (integer)ID to DELETE
      * @param bool $autoMap Update the ressource URL depending on the $options param (default: true)
+     * @param bool $shortCut Do we return directly the requested ressource or the whole response datas (default: true)
      * @access public
      * @throws Exception if the request cannot be done, or if the response cannot be parsed
      * @return object Return the response content in an stdClass
      */
-    public function delete($ressource, $options = array(), $autoMap = true) {
+    public function delete($ressource, $options = array(), $autoMap = true, $shortCut = true) {
         $this->reset();
         $token = $this->getToken();
         if(is_numeric($options) && $autoMap === true) {
@@ -380,12 +384,13 @@ class MediativeApi {
             throw new Exception($this->curl->error_message, $this->curl->error_code);
             return $this->curl->response;
         } elseif(!isset($this->curl->response->response)) {
+            echo stripslashes($this->curl->response);
             throw new Exception('Cannot parse response datas');
             return $this->curl->response;
         } else {
             $response = $this->curl->response->response;
             $ressourceName = preg_replace('#^(\w{1,})(/\d{1,})?$#', '$1', $ressource);
-            if(isset($response->{$ressourceName})) {
+            if(isset($response->{$ressourceName}) && $shortCut === true) {
                 return $response->{$ressourceName};
             } else {
                 return $response;
